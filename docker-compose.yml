@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  server:
+    build:
+      context: ./server
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s = socket.socket(socket.AF_INET, socket.SOCK_STREAM); s.connect(('localhost', 8080)); s.close(); exit(0)"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  client:
+    build:
+      context: ./client
+    depends_on:
+      server:
+        condition: service_healthy
+    command: ["-server", "server:8080", "-interval", "2", "-duration", "30"]
